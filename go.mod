@@ -1,3 +1,3 @@
-module github.com/mrhelloboy/seven
+module github.com/aschenmaker/seven
 
 go 1.22
