@@ -36,7 +36,7 @@ enableEmoji = true
 
 [module]
   [[module.imports]]
-    path = "github.com/mrhelloboy/seven"
+    path = "github.com/aschenmaker/seven"
   [module.hugoVersion]
     extended = false
     min      = "0.128.0"
