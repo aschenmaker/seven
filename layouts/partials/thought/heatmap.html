@@ -11,10 +11,14 @@
 
 {{- $weeksBack := 52 -}}
 {{- $today := now -}}
-{{- /* 构建最近52周每周的起始偏移量（从今天往前推） */ -}}
+{{- /* 计算今天是星期几 (0=周日, 1=周一, ..., 6=周六) */ -}}
+{{- $weekday := $today.Weekday -}}
+{{- /* 构建最近52周每周的起始偏移量（从最近周日开始从今天往前推） */ -}}
 {{- $heatmapContainer := slice -}}
+{{- /* 起始偏移：从今天往前推 (weekday天) 到最近的周日 */ -}}
+{{- $startOffset := sub 0 $weekday -}}
 {{- range $weekIdx := seq (sub $weeksBack 1) -1 0 -}}
-  {{- $daysOffset := mul $weekIdx -7 -}}
+  {{- $daysOffset := add $startOffset (mul $weekIdx -7) -}}
   {{- $heatmapContainer = append $daysOffset $heatmapContainer -}}
 {{- end -}}
 
