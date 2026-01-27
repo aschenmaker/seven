@@ -1,0 +1,260 @@
+{{- define "main" -}}
+  {{- $section := .Section -}}
+  {{- $allPages := where .Site.RegularPages "Section" $section -}}
+  {{- /* 按日期分组 */ -}}
+  {{- $groupedPages := $allPages.GroupByDate "2006-01-02" -}}
+  {{- /* 构建日期到说说列表的映射 */ -}}
+  {{- $pagesByDate := dict -}}
+  {{- $heatmapData := dict -}}
+  {{- range $group := $groupedPages -}}
+    {{- $date := $group.Key -}}
+    {{- $pages := $group.Pages -}}
+    {{- $pagesByDate = merge $pagesByDate (dict $date $pages) -}}
+    {{- $heatmapData = merge $heatmapData (dict $date (len $pages)) -}}
+  {{- end -}}
+
+  {{- /* 构建所有说说列表，按日期倒序 */ -}}
+  {{- $allThoughtPages := slice -}}
+  {{- range $group := $groupedPages -}}
+    {{- range $page := $group.Pages -}}
+      {{- $allThoughtPages = append $page $allThoughtPages -}}
+    {{- end -}}
+  {{- end -}}
+
+  <div class="mx-auto flex w-full max-w-250 grow flex-col p-6 lg:px-8"
+    x-data="{
+      selectedDate: null,
+      currentPage: 1,
+      itemsPerPage: {{ or .Site.Params.thought.itemsPerPage 10 }},
+      language: '{{ .Site.Language.Lang }}',
+      allPagesByDate: {{ $pagesByDate | jsonify }},
+      allThoughtPages: [
+        {{- range $i, $page := $allThoughtPages -}}
+          {
+            title: {{ $page.Title | jsonify }},
+            permalink: {{ $page.Permalink | jsonify }},
+            date: {{ $page.Date.Format "2006-01-02" | jsonify }},
+            datetime: {{ $page.Date.Format "2006-01-02T15:04:05+08:00" | jsonify }},
+            time: {{ $page.Date.Format "15:04" | jsonify }},
+            weekday: {{ i18n (printf "weekday.%s" (lower $page.Date.Weekday)) | jsonify }},
+            location: {{ $page.Params.location | default "" | jsonify }},
+            content: {{ if gt $page.WordCount 50 }}{{ $page.Summary | jsonify }}{{ else }}{{ $page.Content | jsonify }}{{ end }},
+            images: {{ $page.Params.images | default slice | jsonify }},
+            wordCount: {{ $page.WordCount }}
+          }{{ if lt $i (sub (len $allThoughtPages) 1) }},{{ end }}
+        {{- end -}}
+      ],
+      get filteredPages() {
+        if (!this.selectedDate) {
+          return [];
+        }
+        return this.allThoughtPages.filter(page => page.date === this.selectedDate);
+      },
+      get filteredCountText() {
+        const count = this.filteredPages?.length || 0;
+        if (this.language.startsWith('zh')) {
+          return this.selectedDate + ' 的说说 (' + count + '条)';
+        }
+        const suffix = count === 1 ? 'thought' : 'thoughts';
+        return count + ' ' + suffix + ' on ' + this.selectedDate;
+      },
+      get pagedPages() {
+        if (this.selectedDate) {
+          return this.filteredPages;
+        }
+        const start = (this.currentPage - 1) * this.itemsPerPage;
+        return this.allThoughtPages.slice(start, start + this.itemsPerPage);
+      },
+      get totalPages() {
+        if (this.selectedDate) {
+          return Math.ceil((this.filteredPages?.length || 0) / this.itemsPerPage);
+        }
+        return Math.ceil(this.allThoughtPages.length / this.itemsPerPage);
+      },
+      get groupedPages() {
+        const pages = this.pagedPages;
+        if (!pages || pages.length === 0) return [];
+        const groups = {};
+        pages.forEach(page => {
+          if (!groups[page.date]) {
+            groups[page.date] = [];
+          }
+          groups[page.date].push(page);
+        });
+        return Object.entries(groups).map(([date, items]) => ({ date, pages: items }));
+      },
+      init() {
+        const params = new URLSearchParams(window.location.search);
+        const dateParam = params.get('date');
+        if (dateParam) {
+          this.selectedDate = dateParam;
+        }
+        window.addEventListener('select-thought-date', (e) => {
+          this.selectedDate = e.detail.date;
+          this.currentPage = 1;
+          this.updateUrl();
+          this.scrollToTimeline();
+        });
+      },
+      updateUrl() {
+        const url = new URL(window.location);
+        if (this.selectedDate) {
+          url.searchParams.set('date', this.selectedDate);
+        } else {
+          url.searchParams.delete('date');
+        }
+        window.history.pushState({}, '', url);
+      },
+      scrollToTimeline() {
+        this.$nextTick(() => {
+          const element = document.getElementById('timeline-container');
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        });
+      },
+      clearFilter() {
+        this.selectedDate = null;
+        this.currentPage = 1;
+        this.updateUrl();
+      },
+      goToPage(page) {
+        if (page >= 1 && page <= this.totalPages) {
+          this.currentPage = page;
+          this.scrollToTimeline();
+        }
+      }
+    }">
+    {{/* 页面标题和描述 */}}
+    {{ if or .Title .Content }}
+      <div class="mb-8 flex max-w-prose flex-col">
+        <div class="flex items-center justify-start space-x-2 text-gray-800 dark:text-gray-400">
+          <svg class="size-7" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
+            <path d="M240-500v-220h220v220H240Zm0 260v-220h220v220H240Zm260-260v-220h220v220H500Zm0 260v-220h220v220H500ZM320-580h60v-60h-60v60Zm260 0h60v-60h-60v60ZM320-320h60v-60h-60v60Zm260 0h60v-60h-60v60ZM380-580Zm200 0Zm0 200Zm-200 0ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Z" />
+          </svg>
+          <p class="hs-instruction-title text-2xl font-bold">{{ .Title }}</p>
+        </div>
+        {{ if .Content }}
+          <div class="hs-instruction format py-5 dark:format-invert format-a:text-[--hs-text-color-hover] dark:text-gray-400">
+            {{ .Content }}
+          </div>
+        {{ end }}
+        <span class="h-px w-full max-w-4xl bg-gray-300 dark:bg-gray-600"></span>
+      </div>
+    {{ end }}
+
+    {{/* 热力图 */}}
+    {{ if .Site.Params.thought.showHeatmap | default true }}
+      {{ partial "thought/heatmap.html" (dict "heatmapData" $heatmapData "pagesByDate" $pagesByDate) }}
+    {{ end }}
+
+    {{/* 筛选提示栏 */}}
+    <template x-if="selectedDate">
+      <div class="mt-8 mb-4 flex items-center justify-between rounded-lg bg-emerald-50 px-4 py-2 dark:bg-emerald-900/30">
+        <span class="text-sm text-emerald-700 dark:text-emerald-300">
+          <span x-text="filteredCountText"></span>
+        </span>
+        <button
+          @click="clearFilter()"
+          class="rounded-md px-3 py-1 text-sm text-emerald-600 hover:bg-emerald-100 dark:text-emerald-400 dark:hover:bg-emerald-900/50">
+          {{ T "pagination.clear_filter" | default "Clear Filter" }}
+        </button>
+      </div>
+    </template>
+
+    {{/* 时间线容器 */}}
+    <div id="timeline-container" class="mt-8">
+      <template x-for="(group, index) in groupedPages" :key="group.date">
+        <div>
+          <template x-for="(page, pageIndex) in group.pages" :key="page.permalink">
+            <article class="timeline-item relative mb-8 ml-4 border-l-2 border-gray-200 dark:border-gray-700 pl-6 pb-2 transition-all duration-300"
+              :class="{ 'first-of-day': pageIndex === 0 }"
+              :id="pageIndex === 0 ? 'date-' + page.date : null">
+              <div class="timeline-dot absolute -left-[9px] top-2 h-4 w-4 rounded-full border-2 border-white bg-gray-400 dark:border-gray-900 dark:bg-gray-600 transition-all duration-300"
+                :class="{ 'bg-emerald-500 dark:bg-emerald-400': pageIndex === 0 }"></div>
+
+              <div class="mb-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+                <span x-text="page.date"></span>
+                <span x-text="'(' + page.weekday + ')'" class="mx-1 text-gray-400 dark:text-gray-500"></span>
+                <span x-text="page.time"></span>
+                <template x-if="page.location">
+                  <span><span class="mx-1">·</span><span x-text="page.location" class="text-gray-400 dark:text-gray-500"></span></span>
+                </template>
+              </div>
+
+              <template x-if="page.title">
+                <h3 class="mb-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
+                  <a :href="page.permalink" class="hover:text-[--hs-text-color-hover] hover:underline hover:decoration-[--decoration-color] hover:underline-offset-4" x-text="page.title"></a>
+                </h3>
+              </template>
+
+              <template x-if="page.images && page.images.length > 0">
+                <div class="mb-3 flex gap-2 overflow-x-auto">
+                  <template x-for="image in page.images">
+                    <img :src="image" class="h-32 w-auto rounded-lg object-cover" alt="Thought image" loading="lazy" />
+                  </template>
+                </div>
+              </template>
+
+              <div class="hs-content format dark:format-invert text-gray-600 dark:text-gray-300" x-html="page.content"></div>
+
+              <template x-if="page.wordCount > 50">
+                <a :href="page.permalink" class="mt-2 inline-block text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:underline">
+                  {{ T "readmore" | default "Read More" }} &rarr;
+                </a>
+              </template>
+            </article>
+          </template>
+        </div>
+      </template>
+
+      <nav class="mt-8 flex justify-center gap-2" x-show="!selectedDate && totalPages > 1" x-cloak>
+        <button
+          @click="goToPage(currentPage - 1)"
+          :disabled="currentPage <= 1"
+          class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed">
+          {{ T "pagination.prev" | default "Previous" }}
+        </button>
+        <template x-for="page in totalPages" :key="page">
+          <button
+            @click="goToPage(page)"
+            class="rounded-md border px-4 py-2 text-sm transition-colors"
+            :class="currentPage === page ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' : 'border-gray-300 bg-white text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'">
+            <span x-text="page"></span>
+          </button>
+        </template>
+        <button
+          @click="goToPage(currentPage + 1)"
+          :disabled="currentPage >= totalPages"
+          class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed">
+          {{ T "pagination.next" | default "Next" }}
+        </button>
+      </nav>
+
+      <template x-if="selectedDate && (!filteredPages || filteredPages.length === 0)">
+        <div class="mt-8 text-center text-gray-500 dark:text-gray-400">
+          {{ T "pagination.no_results" | default "No thoughts for this date" }}
+        </div>
+      </template>
+    </div>
+  </div>
+{{- end -}}
+
+{{- define "extra_link" -}}
+  {{ if not (.Site.Params.disableHightlight | default false ) }}
+    {{ $syntax := resources.Get "/css/syntax.css" }}
+    {{ $syntax = $syntax | css.PostCSS (dict "inlineImports" true) }}
+    {{ if hugo.IsProduction }}
+      {{ $syntax = $syntax | minify | fingerprint | resources.PostProcess }}
+    {{ end }}
+    <link href="{{ $syntax.RelPermalink }}" rel="stylesheet" />
+  {{ end }}
+{{- end -}}
+
+{{- define "script" -}}
+  {{ $thoughtJS := resources.Get "/js/thought.js" }}
+  {{ if hugo.IsProduction }}
+    {{ $thoughtJS = $thoughtJS | minify | fingerprint }}
+  {{ end }}
+  <script src="{{ $thoughtJS.RelPermalink }}" defer></script>
+{{- end -}}
