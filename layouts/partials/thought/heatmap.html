@@ -1,0 +1,92 @@
+{{- /*
+  说说热力图组件
+  显示近一年的活跃度分布，与GitHub热力图保持一致
+  悬浮显示日期和更新数量，点击后筛选当天说说
+*/ -}}
+{{- $heatmapTitle := T "thought.heatmap_title" | default "Activity" -}}
+{{- $itemsText := T "thought.items" | default "updates" -}}
+{{- /* 接收传递的数据，如果没有则自己计算 */ -}}
+{{- $heatmapData := .heatmapData | default dict -}}
+{{- $pagesByDate := .pagesByDate | default dict -}}
+
+{{- $weeksBack := 52 -}}
+{{- $today := now -}}
+{{- /* 构建最近52周每周的起始偏移量（从今天往前推） */ -}}
+{{- $heatmapContainer := slice -}}
+{{- range $weekIdx := seq (sub $weeksBack 1) -1 0 -}}
+  {{- $daysOffset := mul $weekIdx -7 -}}
+  {{- $heatmapContainer = append $daysOffset $heatmapContainer -}}
+{{- end -}}
+
+{{- /* 计算最大活跃数 */ -}}
+{{- $maxCount := 0 -}}
+{{- range $dateStr, $count := $heatmapData -}}
+  {{- $maxCount = math.Max $maxCount $count -}}
+{{- end -}}
+{{- if eq $maxCount 0 -}}
+  {{- $maxCount = 1 -}}
+{{- end -}}
+
+<div class="mb-8">
+  <h3 class="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-200">{{ $heatmapTitle }}</h3>
+
+  {{- /* 热力图容器 - GitHub风格 */ -}}
+  <div class="overflow-x-auto" x-data="{ tooltipData: null, tooltipX: 0, tooltipY: 0 }">
+    <div class="flex gap-1">
+      {{- /* 按周渲染，每列是一周 */ -}}
+      {{- range $weekStart := $heatmapContainer -}}
+        <div class="flex flex-col gap-1">
+          {{- /* 每天一行 */ -}}
+          {{- range $dayIdx := seq 6 -}}
+            {{- $dayOffset := add $weekStart $dayIdx -}}
+            {{- $dayTime := $today.AddDate 0 0 (int $dayOffset) -}}
+            {{- $dateStr := $dayTime.Format "2006-01-02" -}}
+            {{- $dayCount := index $heatmapData $dateStr | default 0 -}}
+            {{- /* 计算颜色等级 0-4 */ -}}
+            {{- $level := 0 -}}
+            {{- if gt $dayCount 0 -}}
+              {{- $level = int (math.Ceil (mul (div $dayCount $maxCount 1.0) 4)) -}}
+              {{- if eq $level 0 }}{{ $level = 1 }}{{ end -}}
+            {{- end -}}
+            {{- $colorClass := index (slice
+              "bg-gray-100 dark:bg-gray-800"
+              "bg-emerald-100 dark:bg-emerald-800"
+              "bg-emerald-200 dark:bg-emerald-600"
+              "bg-emerald-300 dark:bg-emerald-500"
+              "bg-emerald-400 dark:bg-emerald-400"
+            ) $level -}}
+            {{- $hasContent := gt $dayCount 0 -}}
+            <button
+              class="thought-heatmap-cell h-3 w-3 rounded-sm {{ $colorClass }} {{ if $hasContent }}cursor-pointer hover:ring-2 hover:ring-gray-400 dark:hover:ring-gray-500{{ else }}cursor-default{{ end }} transition-all"
+              @mouseenter="if({{ $hasContent }}) { tooltipData = '{{ $dateStr }}: {{ $dayCount }} {{ $itemsText }}'; const rect = $event.target.getBoundingClientRect(); tooltipX = rect.left + rect.width / 2; tooltipY = rect.top - 30; }"
+              @mouseleave="tooltipData = null"
+              {{ if $hasContent }}@click="$dispatch('select-thought-date', { date: '{{ $dateStr }}' })"{{ end }}>
+              <span class="sr-only">{{ $dateStr }}: {{ $dayCount }} {{ $itemsText }}</span>
+            </button>
+          {{- end -}}
+        </div>
+      {{- end -}}
+    </div>
+
+    {{- /* 全局悬浮提示 - 使用 fixed 定位避免被 overflow 容器裁剪 */ -}}
+    <template x-if="tooltipData">
+      <div class="fixed z-50 px-2 py-1 text-xs text-white bg-gray-900 dark:bg-gray-700 rounded whitespace-nowrap pointer-events-none"
+        :style="`left: ${tooltipX}px; top: ${tooltipY}px; transform: translateX(-50%)`">
+        <span x-text="tooltipData"></span>
+      </div>
+    </template>
+  </div>
+
+  {{/* 图例 */ -}}
+  <div class="mt-3 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+    <span>{{ T "thought.less" | default "Less" }}</span>
+    <div class="flex gap-1">
+      <div class="h-3 w-3 rounded-sm bg-gray-100 dark:bg-gray-800"></div>
+      <div class="h-3 w-3 rounded-sm bg-emerald-100 dark:bg-emerald-800"></div>
+      <div class="h-3 w-3 rounded-sm bg-emerald-200 dark:bg-emerald-600"></div>
+      <div class="h-3 w-3 rounded-sm bg-emerald-300 dark:bg-emerald-500"></div>
+      <div class="h-3 w-3 rounded-sm bg-emerald-400 dark:bg-emerald-400"></div>
+    </div>
+    <span>{{ T "thought.more" | default "More" }}</span>
+  </div>
+</div>

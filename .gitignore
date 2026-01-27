@@ -6,3 +6,6 @@ hugo_stats.json
 .vscode
 .idea
 *.DS_Store
+
+# Example site
+exampleSite/test-results/

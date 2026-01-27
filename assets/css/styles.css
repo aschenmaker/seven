@@ -234,3 +234,96 @@ pre {
 .modal > img {
   @apply absolute m-0 p-0;
 }
+
+/* Thought (说说) styles */
+.thought-heatmap-cell {
+  @apply cursor-pointer transition-all duration-150 rounded-sm;
+}
+
+.thought-heatmap-cell:hover {
+  @apply ring-2 ring-gray-400 dark:ring-gray-500;
+}
+
+/* 暗色模式下的热力图颜色优化 - 更明显的绿色 */
+.dark .thought-heatmap-cell[data-level="0"] {
+  @apply bg-gray-800/60;
+}
+
+.dark .thought-heatmap-cell[data-level="1"] {
+  @apply bg-emerald-800;
+}
+
+.dark .thought-heatmap-cell[data-level="2"] {
+  @apply bg-emerald-600;
+}
+
+.dark .thought-heatmap-cell[data-level="3"] {
+  @apply bg-emerald-500;
+}
+
+.dark .thought-heatmap-cell[data-level="4"] {
+  @apply bg-emerald-400;
+}
+
+/* Timeline styles */
+.timeline-item {
+  @apply transition-all duration-300;
+}
+
+.timeline-item:hover .timeline-dot {
+  @apply bg-gray-600 dark:bg-gray-400;
+}
+
+.dark .timeline-item:hover {
+  @apply bg-gray-800/30 rounded-lg;
+}
+
+.dark .timeline-item:hover .timeline-dot {
+  @apply bg-gray-300 dark:bg-gray-200;
+}
+
+.dark .timeline-item:hover .timeline-border {
+  @apply border-gray-500;
+}
+
+/* 代码块在说说页面中的样式优化 */
+.hs-content :where(pre) {
+  @apply rounded-lg overflow-x-auto my-4;
+  scrollbar-width: thin;
+  scrollbar-color: theme('colors.gray.400') transparent;
+}
+
+.dark .hs-content :where(pre) {
+  scrollbar-color: theme('colors.gray.600') transparent;
+}
+
+.hs-content :where(pre)::-webkit-scrollbar {
+  @apply h-1.5;
+}
+
+.hs-content :where(pre)::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+.hs-content :where(pre)::-webkit-scrollbar-thumb {
+  @apply bg-gray-400 rounded-full;
+}
+
+.dark .hs-content :where(pre)::-webkit-scrollbar-thumb {
+  @apply bg-gray-600;
+}
+
+.hs-content :where(code) {
+  @apply font-mono text-sm;
+}
+
+/* 暗色模式下链接样式优化 */
+.dark .hs-content :where(a) {
+  @apply text-blue-400;
+}
+
+.dark .hs-content :where(a):hover {
+  @apply text-blue-300;
+}
+
+

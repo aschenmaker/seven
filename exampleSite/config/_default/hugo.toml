@@ -6,6 +6,8 @@ defaultContentLanguage = "zh-hans"
 enableGitInfo = true
 enableEmoji = true
 
+theme = "seven"
+
 [pagination]
   pagerSize = 18
 
@@ -35,8 +37,6 @@ enableEmoji = true
     startLevel = 2
 
 [module]
-  [[module.imports]]
-    path = "github.com/aschenmaker/seven"
   [module.hugoVersion]
     extended = false
     min      = "0.128.0"
@@ -65,5 +65,4 @@ enableEmoji = true
 
 [services]
   [services.disqus]
-    shortname = ""  # "seven-demo"  
-
+    shortname = ""  # "seven-demo"

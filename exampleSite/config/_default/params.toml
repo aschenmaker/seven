@@ -46,6 +46,11 @@
   # eg: showContentTypes = ["posts", "blogs"]
   showContentTypes = ["docs", "posts"]
 
+[thought]
+  enable = true
+  showHeatmap = true
+  itemsPerPage = 10
+
 [follow]
   [follow.email]
     enable = false

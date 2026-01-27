@@ -1,6 +1,15 @@
 readmore: "Read More"
 summary: "Summary"
 
+weekday:
+  monday: "Mon"
+  tuesday: "Tue"
+  wednesday: "Wed"
+  thursday: "Thu"
+  friday: "Fri"
+  saturday: "Sat"
+  sunday: "Sun"
+
 article:
   words: "words"
   minutes: "mins"
@@ -22,3 +31,16 @@ footer:
   powered_by: "Powered by {{ .Hugo }} & {{ .Theme }}"
 
 copyright: "All Rights Reserved"
+
+thought:
+  heatmap_title: "Activity"
+  less: "Less"
+  more: "More"
+  items: "updates"
+
+pagination:
+  thoughts_count: "thoughts ({count})"
+  clear_filter: "Clear Filter"
+  no_results: "No thoughts for this date"
+  prev: "Previous"
+  next: "Next"
