@@ -48,7 +48,7 @@
             time: {{ $page.Date.Format "15:04" | jsonify }},
             weekday: {{ i18n (printf "weekday.%s" (lower $page.Date.Weekday)) | jsonify }},
             location: {{ $page.Params.location | default "" | jsonify }},
-            content: {{ if gt $page.WordCount 50 }}{{ $page.Summary | jsonify }}{{ else }}{{ $page.Content | jsonify }}{{ end }},
+            content: {{ $page.Content | jsonify }},
             images: {{ $page.Params.images | default slice | jsonify }},
             wordCount: {{ $page.WordCount }}
           }{{ if lt $i (sub (len $allThoughtPages) 1) }},{{ end }}
