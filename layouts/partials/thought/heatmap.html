@@ -41,7 +41,7 @@
       {{- range $weekStart := $heatmapContainer -}}
         <div class="flex flex-col gap-1">
           {{- /* 每天一行 */ -}}
-          {{- range $dayIdx := seq 6 -}}
+          {{- range $dayIdx := seq 0 6 -}}
             {{- $dayOffset := add $weekStart $dayIdx -}}
             {{- $dayTime := $today.AddDate 0 0 (int $dayOffset) -}}
             {{- $dateStr := $dayTime.Format "2006-01-02" -}}
