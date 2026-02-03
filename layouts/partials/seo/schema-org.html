@@ -1,0 +1,48 @@
+{{- /*
+  Schema.org JSON-LD Structured Data template
+  Generates structured data for Google Rich Results
+*/ -}}
+
+{{- /* WebSite Schema with SearchAction */ -}}
+{{- $searchTarget := printf "%ssearch?q={search_term_string}" .Site.BaseURL -}}
+{{- $website := dict "@context" "https://schema.org" "@type" "WebSite" "@id" (printf "%s#website" .Site.BaseURL) "name" .Site.Title "url" .Site.BaseURL "potentialAction" (dict "@type" "SearchAction" "target" (dict "@type" "EntryPoint" "urlTemplate" $searchTarget) "query-input" "required name=search_term_string") -}}
+{{- printf "<script type=\"application/ld+json\">%s</script>" ($website | jsonify) | safeHTML -}}
+
+{{- /* Organization Schema */ -}}
+{{- with .Site.Params.seo.organization }}
+{{- $org := dict "@context" "https://schema.org" "@type" "Organization" "@id" (printf "%s#organization" .url) "name" .name "url" .url "logo" .logo "sameAs" .sameAs -}}
+{{- printf "<script type=\"application/ld+json\">%s</script>" ($org | jsonify) | safeHTML -}}
+{{- end -}}
+
+{{- /* BreadcrumbList Schema */ -}}
+{{- $breadcrumbs := slice -}}
+{{- $position := 1 -}}
+{{- range .Ancestors }}
+  {{- if .IsPage }}
+    {{- $breadcrumbs = $breadcrumbs | append (dict "@type" "ListItem" "position" $position "name" .Title "item" .Permalink) -}}
+    {{- $position = add $position 1 -}}
+  {{- end }}
+{{- end }}
+{{- if gt (len $breadcrumbs) 0 }}
+{{- $breadcrumbs = $breadcrumbs | append (dict "@type" "ListItem" "position" $position "name" .Title "item" .Permalink) -}}
+{{- $bc := dict "@context" "https://schema.org" "@type" "BreadcrumbList" "itemListElement" $breadcrumbs -}}
+{{- printf "<script type=\"application/ld+json\">%s</script>" ($bc | jsonify) | safeHTML -}}
+{{- end -}}
+
+{{- /* BlogPosting Schema for articles */ -}}
+{{- if and .IsPage (eq .Kind "page") }}
+{{- $image := "" -}}
+{{- with resources.Get .Params.image }}{{ $image = .Permalink }}{{- end -}}
+{{- with .Params.featuredImage }}{{ $image = . | absURL }}{{- end -}}
+{{- $author := or .Params.author .Site.Params.seo.default_author .Site.Params.author -}}
+{{- $blog := dict "@context" "https://schema.org" "@type" "BlogPosting" "@id" .Permalink "headline" .Title "image" $image "datePublished" (.Date.Format "2006-01-02T15:04:05-07:00") "dateModified" (.Lastmod.Format "2006-01-02T15:04:05-07:00") "author" (dict "@type" "Person" "name" $author) "publisher" (dict "@type" "Organization" "name" .Site.Title "logo" (dict "@type" "ImageObject" "url" (.Site.Params.seo.social_image | absURL))) "description" (.Description | default .Summary | plainify) "mainEntityOfPage" (dict "@type" "WebPage" "@id" .Permalink) "articleSection" (index .Params.categories 0 | default "") "keywords" (delimit (.Params.tags | default slice) ", ") -}}
+{{- printf "<script type=\"application/ld+json\">%s</script>" ($blog | jsonify) | safeHTML -}}
+{{- end -}}
+
+{{- /* SocialMediaPosting Schema for thought pages */ -}}
+{{- if and .IsPage (eq .Section "thought") }}
+{{- $author := or .Params.author .Site.Params.seo.default_author .Site.Params.author -}}
+{{- $thought := dict "@context" "https://schema.org" "@type" "SocialMediaPosting" "@id" .Permalink "headline" .Title "datePublished" (.Date.Format "2006-01-02T15:04:05-07:00") "dateModified" (.Lastmod.Format "2006-01-02T15:04:05-07:00") "author" (dict "@type" "Person" "name" $author) "description" (.Description | default .Summary | plainify) "mainEntityOfPage" (dict "@type" "WebPage" "@id" .Permalink) "articleBody" (.Plain | printf "%s" | truncate 5000) -}}
+{{- with .Params.location }}{{ $thought = merge $thought (dict "contentLocation" .) }}{{- end -}}
+{{- printf "<script type=\"application/ld+json\">%s</script>" ($thought | jsonify) | safeHTML -}}
+{{- end -}}

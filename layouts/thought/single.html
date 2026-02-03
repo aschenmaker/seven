@@ -20,11 +20,9 @@
         :class="{ 'image-gradient': !isGradient }"
         class="h-60 w-full object-cover md:h-80"
         src="{{ $image.Permalink }}"
-        alt="Hero Image of content"
+        alt="{{ .Title }}"
         srcset="" />
     </div>
-  {{ else }}
-    <div id="hs-feature" class="h-40 w-full md:h-60 bg-gradient-to-b from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900"></div>
   {{ end }}
 
   <div

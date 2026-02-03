@@ -326,4 +326,11 @@ pre {
   @apply text-blue-300;
 }
 
+/* Skip link for accessibility */
+.skip-link:focus, .sr-only:focus {
+  @apply fixed left-4 top-4 z-50 block bg-white px-4 py-2 text-black shadow-lg outline-none ring-2 ring-blue-500 dark:bg-gray-800 dark:text-white;
+}
 
+.dark .skip-link:focus {
+  @apply bg-gray-800 text-white;
+}

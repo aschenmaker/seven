@@ -120,4 +120,23 @@
 [analytics]
   [analytics.goatcounter]
     enable = true
-    code = "seven-demo"  
+    code = "seven-demo"
+
+[seo]
+  # Default social share image (1200x630 recommended)
+  social_image = "/images/social-share.png"
+
+  # Twitter handle (without @)
+  twitter_site = "your_handle"
+
+  # Default author for content
+  default_author = "Seven"
+
+  [seo.organization]
+    name = "Seven Theme"
+    url = "https://example.com"
+    logo = "https://example.com/logo.png"
+    sameAs = [
+      "https://twitter.com/your_handle",
+      "https://github.com/mrhelloboy/seven"
+    ]  

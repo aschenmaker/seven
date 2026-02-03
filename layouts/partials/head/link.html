@@ -16,6 +16,21 @@
   {{- end -}}
 {{- end -}}
 
+{{- /* Canonical URL */ -}}
+<link rel="canonical" href="{{ .Permalink }}" />
+
+{{- /* Pagination prev/next for paginated list pages only */ -}}
+{{- if or .IsHome (eq .Kind "section") (eq .Kind "taxonomy") (eq .Kind "term") -}}
+  {{- with .Paginator }}
+    {{- if .HasPrev }}
+      <link rel="prev" href="{{ .Prev.URL }}" />
+    {{- end -}}
+    {{- if .HasNext }}
+      <link rel="next" href="{{ .Next.URL }}" />
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+
 
 <!-- hook before css -->
 {{ with resources.Get "css/hook_before.css" }}

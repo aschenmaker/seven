@@ -1,4 +1,5 @@
 {{ define "main" }}
+  <h1 class="sr-only">{{ .Site.Title }}</h1>
   {{ $allPages := .Site.Pages }}
   {{ with .Site.Params.home.showContentTypes }}
     {{ $allPages = where $allPages "Type" "in" . }}

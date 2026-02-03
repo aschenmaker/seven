@@ -44,3 +44,11 @@ pagination:
   no_results: "No thoughts for this date"
   prev: "Previous"
   next: "Next"
+
+skip_link: "Skip to main content"
+
+thought:
+  title: "Thought image"
+
+article:
+  feature_image: "Feature image for %s"

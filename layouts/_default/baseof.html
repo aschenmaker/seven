@@ -26,11 +26,12 @@
     {{- block "extra_meta" . }}{{- end }}
     {{- partial "head/hook_before_link.html" . -}}
     {{- partial "head/link.html" . -}}
-    {{- partial "head/font_link.html" . -}}
+    {{- partial "head/opengraph.html" . -}}
     {{- block "extra_link" . }}{{- end }}
     {{- partial "head/hook_after_link.html" . -}}
     {{- partial "head/script.html" . -}}
     {{- block "extra_script". }}{{- end }}
+    {{- partial "seo/schema-org.html" . -}}
 
 
     <style>
@@ -43,7 +44,7 @@
   <body
     x-ref="body"
     x-cloak
-    x-data="{ 
+    x-data="{
       shrink: window.scrollY > 10 ? true : false,
       scrollY: 0,
       bgOpen: $store.bgImg.on,
@@ -52,6 +53,12 @@
     :style="'background-image: ' + 'url(' + $store.bgImg.bgImg + ')'"
     :class="{'bg-white': !bgOpen, 'dark:bg-gray-900': !bgOpen, 'bg-cover': bgOpen, 'bg-fixed': bgOpen, 'dark:delay-300': $store.darkMode.animate}"
     class="-z-10 flex h-screen flex-col scroll-auto">
+    <!-- Skip to main content link for accessibility -->
+    <a
+      href="#main-content"
+      class="skip-link sr-only focus:block focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-white focus:px-4 focus:py-2 focus:text-black focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:bg-gray-800 dark:focus:text-white">
+      {{ T "skip_link" | default "Skip to main content" }}
+    </a>
     <!-- Default is Light，click🌛，light to dark -->
     <!-- toDarkAnimate: true -> light to dark -->
     <!-- toDarkAnimate: false -> dark to light -->
@@ -98,7 +105,9 @@
 
     {{- partial "header/header.html" . -}}
 
-    {{- block "main" . }}{{- end }}
+    <main id="main-content">
+      {{- block "main" . }}{{- end }}
+    </main>
 
     {{ with .Site.Params.search }}
       {{ if .enable }}

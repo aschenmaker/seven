@@ -17,6 +17,25 @@
   <meta name="description" content="{{ .Site.Params.description }}" />
 {{ end }}
 
+{{- /* Author */ -}}
+{{- $author := or .Params.author .Site.Params.seo.default_author .Site.Params.author -}}
+{{- if $author }}
+  <meta name="author" content="{{ $author }}" />
+{{- end -}}
+
+{{- /* Keywords */ -}}
+{{- $keywords := "" -}}
+{{- if .IsPage -}}
+  {{- $keywords = delimit (.Params.tags | default slice) ", " -}}
+{{- end -}}
+{{- if $keywords }}
+  <meta name="keywords" content="{{ $keywords }}" />
+{{- end -}}
+
+{{- /* Robots */ -}}
+{{- $robots := or .Params.robots "index, follow" -}}
+<meta name="robots" content="{{ $robots }}" />
+
 {{- with .Site.Params.app.themeColor -}}
   <meta name="theme-color" content="{{ . }}" />
 {{- end -}}

@@ -3,4 +3,9 @@
 {{ $random_color := index $shuffled 0 }}
 
 
-<div class="h-full w-full bg-[{{ $random_color }}] text-center"></div>
+<div
+  class="h-full w-full text-center"
+  role="img"
+  aria-label="{{ T "article.feature_image" | default (printf "Feature image for %s" .Title) }}"
+  style="background: linear-gradient(to bottom, {{ $random_color }}, {{ $random_color }}dd);">
+</div>

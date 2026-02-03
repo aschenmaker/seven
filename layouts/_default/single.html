@@ -21,7 +21,7 @@
         :class="{ 'image-gradient': !isGradient }"
         class="h-60 w-full object-cover md:h-120"
         src="{{ $image.Permalink }}"
-        alt="Hero Image of content"
+        alt="{{ .Title }}"
         srcset="" />
     </div>
   {{ else }}
@@ -56,11 +56,11 @@
                 {{ end }}
               </span>
             </div>
-            <div
+            <h1
               id="hs-content-title"
               class="hs-content-title py-1 text-start text-3xl font-bold tracking-wide text-black dark:text-white lg:text-4xl">
               {{ .Title }}
-            </div>
+            </h1>
 
             <div
               class="hs-content-meta flex flex-row flex-wrap items-center space-x-1 pb-1 pt-3.5 text-xs font-extralight tracking-wide text-gray-500/90 dark:text-gray-600">
